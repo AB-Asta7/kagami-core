@@ -71,6 +71,6 @@ def test_node_07_llm_execution():
     assert result.tokens_consumed == 15
     assert result.metadata.get("model") == "gemini-2.5-flash"
     mock_adapter.generate.assert_called_once_with(
-        prompt="Analiza esta arquitectura",
+        contents="Analiza esta arquitectura",
         system_instruction="Eres un auditor",
     )
