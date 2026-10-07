@@ -60,3 +60,32 @@ def test_kernel_token_quota_enforcement():
 
     with pytest.raises(KernelExecutionError, match="Presupuesto de tokens excedido"):
         kernel.execute_pipeline(["dummy_step", "dummy_step"], initial_payload)
+
+import json
+
+
+def test_kernel_telemetry_file_persistence(tmp_path):
+    log_file = tmp_path / "logs" / "test_telemetry.jsonl"
+    dispatcher = Dispatcher()
+    kernel = ChusuKanameKernel(
+        dispatcher=dispatcher,
+        telemetry_path=str(log_file),
+    )
+
+    initial_payload = AgentPayload(
+        node_id="test_runner",
+        execution_time_ms=0.0,
+        data={"val": 5},
+    )
+
+    kernel.execute_pipeline(["dummy_step"], initial_payload)
+
+    assert log_file.exists()
+    lines = log_file.read_text(encoding="utf-8").strip().split("\n")
+    assert len(lines) == 1
+
+    record = json.loads(lines[0])
+    assert record["supervisor"] == "Chūsu Kaname"
+    assert record["pipeline"] == ["dummy_step"]
+    assert record["total_tokens"] == 10
+    assert len(record["steps"]) == 1
