@@ -67,28 +67,42 @@ class Node05GachaFSM(BaseAgent):
             )
 
             if got_5_star:
+                used_prior_guarantee = banner_guaranteed
                 if banner_guaranteed:
                     is_promotional = True
+                    won_50_50: Optional[bool] = None
+                    acquisition_reason = "GARANTIZADO_PREVIO"
                     banner_guaranteed = False
                 else:
                     won_50_50 = rng.random() < 0.5
                     is_promotional = won_50_50
+                    acquisition_reason = "50_50_GANADO" if won_50_50 else "50_50_PERDIDO"
                     banner_guaranteed = not won_50_50
 
                 obtained_5_stars.append({
                     "pull_number": pull_idx,
                     "pity_count": pity_counter,
                     "is_promotional": is_promotional,
+                    "used_prior_guarantee": used_prior_guarantee,
+                    "won_50_50": won_50_50,
+                    "acquisition_reason": acquisition_reason,
                 })
                 pity_counter = 0
 
         elapsed_ms: float = (time.perf_counter() - start_time) * 1000.0
+        promo_count = sum(1 for item in obtained_5_stars if item["is_promotional"])
 
         result_data = {
             "node_name": "Gacha FSM Simulator",
             "total_pulls": target_pulls,
+            "initial_guaranteed": has_guaranteed,
+            "soft_pity_start": soft_pity_start,
+            "hard_pity": hard_pity,
+            "worst_case_promo_pulls": hard_pity if has_guaranteed else hard_pity * 2,
+            "current_pity": pity_counter,
             "total_5_stars": len(obtained_5_stars),
-            "promotional_count": sum(1 for item in obtained_5_stars if item["is_promotional"]),
+            "promotional_count": promo_count,
+            "obtained_targets": promo_count,
             "guaranteed_active_next": banner_guaranteed,
             "items": obtained_5_stars,
         }
@@ -96,7 +110,7 @@ class Node05GachaFSM(BaseAgent):
         return AgentPayload(
             node_id="05",
             execution_time_ms=round(elapsed_ms, 3),
-            tokens_consumed=len(obtained_5_stars) * 4,
+            tokens_consumed=max(1, len(obtained_5_stars) * 4),
             data=result_data,
             metadata={"status": "success"},
         )

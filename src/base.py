@@ -87,3 +87,6 @@ def get_agent_instance(node_id: str, **kwargs: Any) -> BaseAgent:
     if not agent_cls:
         raise KeyError(f"Nodo '{node_id}' no encontrado en AGENT_REGISTRY.")
     return agent_cls(**kwargs)
+class KernelExecutionError(Exception):
+    """Excepción base para fallos durante la ejecución de pipelines en el Kernel."""
+    pass

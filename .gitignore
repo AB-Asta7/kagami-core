@@ -2,3 +2,16 @@
 __pycache__/
 *.py[cod]
 *.class
+.env
+
+# Credenciales y variables de entorno locales
+.env
+.env.*
+!.env.example
+
+# Logs y base de datos local
+logs/*.jsonl
+
+# Python bytecode
+__pycache__/
+*.pyc
